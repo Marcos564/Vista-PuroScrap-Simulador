@@ -11,17 +11,7 @@ export default function Header({ status }) {
         </div>
         PuroScrap <span>&nbsp;Analytics</span>
       </div>
-      <div className="header-right">
-        {status === 'online' ? (
-          <div className="status-badge">
-            <span className="status-dot"></span> API Online
-          </div>
-        ) : (
-          <div className="status-badge" style={{ color: '#dc2626' }}>
-            <span style={{ fontWeight: 700 }}>⚠ API Offline</span>
-          </div>
-        )}
-      </div>
+      
     </header>
   );
 }

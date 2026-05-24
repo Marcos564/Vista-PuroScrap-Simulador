@@ -148,6 +148,7 @@ main {
   border-radius: 16px;
   box-shadow: var(--shadow-md);
   padding: 1.75rem;
+  margin-top: 6rem;
   border: 1.5px solid var(--border);
   transition: box-shadow 0.2s;
 }
