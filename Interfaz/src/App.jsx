@@ -4,7 +4,7 @@ import Formulario from './componentes/Formulario';
 import Resultados from './componentes/Resultados';
 import Dashboard from './componentes/Dashboard';
 import Historial from './componentes/Historial';
-import { generarCantidadLote, binomial } from './componentes/Distribuciones';
+import { generarCantidadLote, binomial, normal } from './componentes/Distribuciones';
 
 const API_URL = 'http://127.0.0.1:8000';
 
@@ -69,11 +69,123 @@ function App() {
       teclados++;
     }
   }
+let mousesReutilizables = 0;
+let mousesReciclables = 0;
+for (let i = 0; i < mouses; i++) {
 
+  const destino = binomial(
+    0.6,
+    "reutilizable",
+    "reciclable"
+  );
 
-  console.log("Cantidad total:", cantidadEntrante);
-  console.log("Mouses:", mouses);
-  console.log("Teclados:", teclados);
+  if (destino === "reutilizable") {
+    mousesReutilizables++;
+  } else {
+    mousesReciclables++;
+  }
+}
+
+let tecladosReutilizables = 0;
+let tecladosReciclables = 0;
+
+for (let i = 0; i < teclados; i++) {
+
+  const destino = binomial(
+    0.6,
+    "reutilizable",
+    "reciclable"
+  );
+
+  if (destino === "reutilizable") {
+    tecladosReutilizables++;
+  } else {
+    tecladosReciclables++;
+  }
+}
+
+  
+let trp = 0;      // Total residuos peligrosos
+let tr = 0;       // Total reutilizable
+let ingreso = 0;  // Ingreso total
+
+// ---------- MOUSES RECICLABLES ----------
+
+for (let i = 0; i < mousesReciclables; i++) {
+
+  const pesoTotal = normal(100, 10);
+
+  const masaReciclable = pesoTotal * 0.72;
+  const masaReutilizable = pesoTotal * 0.25;
+  const masaPeligrosa = pesoTotal * 0.03;
+
+  const cobreExtraible = normal(10, 1.6);
+  const hierroExtraido = normal(7, 1.6);
+
+  trp += masaPeligrosa;
+  tr += masaReutilizable;
+
+  ingreso +=
+    (cobreExtraible * 13.7) +
+    (hierroExtraido * 0.50);
+}
+
+// ---------- TECLADOS RECICLABLES ----------
+
+for (let i = 0; i < tecladosReciclables; i++) {
+
+  const pesoTotal = normal(100, 10);
+
+  const masaReciclable = pesoTotal * 0.72;
+  const masaReutilizable = pesoTotal * 0.25;
+  const masaPeligrosa = pesoTotal * 0.03;
+
+  const cobreExtraible = normal(15, 30);
+  const hierroExtraido = normal(50, 150);
+
+  trp += masaPeligrosa;
+  tr += masaReutilizable;
+
+  ingreso +=
+    (cobreExtraible * 13.7) +
+    (hierroExtraido * 0.50);
+}
+
+// =====================================
+// RESULTADOS
+// =====================================
+
+console.clear();
+
+console.log("========== LOTE ==========");
+console.log("Cantidad total:", cantidadEntrante);
+
+console.log("");
+
+console.log("========== CLASIFICACIÓN ==========");
+console.log("Mouses:", mouses);
+console.log("Teclados:", teclados);
+
+console.log("");
+
+console.log("Mouses reutilizables:", mousesReutilizables);
+console.log("Mouses reciclables:", mousesReciclables);
+
+console.log("");
+
+console.log("Teclados reutilizables:", tecladosReutilizables);
+console.log("Teclados reciclables:", tecladosReciclables);
+
+console.log("");
+
+console.log("========== RECUPERACIÓN ==========");
+console.log("TRP (Residuo peligroso):", trp.toFixed(2));
+console.log("TR (Material reutilizable):", tr.toFixed(2));
+
+console.log("");
+
+console.log("========== INGRESOS ==========");
+console.log("$", ingreso.toFixed(2));
 
 
     setLoading(true);
