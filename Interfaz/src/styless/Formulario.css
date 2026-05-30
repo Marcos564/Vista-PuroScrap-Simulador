@@ -143,3 +143,19 @@ button.btn-primary:disabled {
   cursor: not-allowed;
   transform: none;
 }
+
+/* ── Loader inline en botón ── */
+.loader-inline {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin-inline 0.7s linear infinite;
+  margin-right: 4px;
+}
+
+@keyframes spin-inline {
+  to { transform: rotate(360deg); }
+}
