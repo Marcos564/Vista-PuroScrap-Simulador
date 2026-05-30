@@ -4,7 +4,7 @@ import Formulario from './componentes/Formulario';
 import Resultados from './componentes/Resultados';
 import Dashboard from './componentes/Dashboard';
 import Historial from './componentes/Historial';
-import { generarCantidadLote } from './componentes/Distribuciones';
+import { generarCantidadLote, binomial } from './componentes/Distribuciones';
 
 const API_URL = 'http://127.0.0.1:8000';
 
@@ -53,13 +53,29 @@ function App() {
   const cantidadEntrante =
     generarCantidadLote(loteMin, loteMax);
 
-  console.clear();
+  let mouses = 0;
+  let teclados = 0;
+   for (let i = 0; i < cantidadEntrante; i++) {
+// AQUI DEFINIMOS LA PROBABILIDAD DE QUE SEA MOUSE O TECLADO
+    const tipo = binomial(
+      0.5,
+      "mouse",
+      "teclado"
+    );
 
-  console.log("========== LLEGADA DE LOTE ==========");
-  console.log("Lote mínimo:", loteMin);
-  console.log("Lote máximo:", loteMax);
-  console.log("Cantidad generada:", cantidadEntrante);
-  console.log("====================================");
+    if (tipo === "mouse") {
+      mouses++;
+    } else {
+      teclados++;
+    }
+  }
+
+
+  console.log("Cantidad total:", cantidadEntrante);
+  console.log("Mouses:", mouses);
+  console.log("Teclados:", teclados);
+
+
     setLoading(true);
     try {
       const queryParams = new URLSearchParams(parametros);
