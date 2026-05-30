@@ -1,288 +1,110 @@
-import "../styless/Formulario.css";
+import '../styless/Formulario.css';
 
-export default function Formulario({ onSimular, isLoading }) {
+export default function Formulario({ onSimular }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const parametros = Object.fromEntries(formData.entries());
+    const fd  = new FormData(e.target);
+    const raw = Object.fromEntries(fd.entries());
 
-    if (!parametros.semilla) delete parametros.semilla;
-    if (!parametros.nombre) delete parametros.nombre;
-
-    onSimular(parametros);
+    onSimular({
+      nombre:               raw.nombre?.trim() || null,
+      loteMin:              parseInt(raw.loteMin),
+      loteMax:              parseInt(raw.loteMax),
+      operarios:            parseInt(raw.operarios),
+      costoHora:            parseFloat(raw.costoHora),
+      costoDiarioPorUnidad: parseFloat(raw.costoDiarioPorUnidad),
+    });
   };
 
-  const preventInvalidChars = (e) => {
-    if (['e', 'E', '+', '-', '.'].includes(e.key)) e.preventDefault();
+  const noNeg = (e) => {
+    if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
   };
 
-  const enforceMaxValue = (e) => {
-    let { value, max } = e.target;
-
-    if (value.length > 1 && value.startsWith('0')) {
-      value = value.replace(/^0+(?=\d)/, '');
-      e.target.value = value;
-    }
-
-    if (value === "" || !max) return;
-
-    if (parseInt(value, 10) > parseInt(max, 10)) {
+  const clamp = (e) => {
+    const { value, max } = e.target;
+    if (value.length > 1 && value.startsWith('0'))
+      e.target.value = value.replace(/^0+(?=\d)/, '');
+    if (max && parseInt(value) > parseInt(max))
       e.target.value = max;
-    }
   };
 
   return (
     <section className="card">
       <h2>Parámetros de Simulación</h2>
-
       <form onSubmit={handleSubmit}>
 
-        {/* IDENTIFICACIÓN */}
-        <div className="form-section-label">
-          Identificación
-        </div>
-
+        {/* Identificación */}
+        <div className="form-section-label">Identificación</div>
         <div className="form-group">
-          <label>Nombre (opcional)</label>
-          <input
-            type="text"
-            name="nombre"
-            placeholder="Ej: Lote Enero 2025"
-            maxLength={60}
-          />
+          <label>Nombre de simulación</label>
+          <input type="text" name="nombre" placeholder="Opcional" maxLength={60} />
         </div>
 
-        {/* NUEVA SECCIÓN */}
-        <div className="section-divider"></div>
-
-        <div className="form-section-label">
-          Llegada de Lotes
-        </div>
-
-        <div className="row">
-
-          <div className="form-group">
-            <label>Lote Mínimo</label>
-            <input
-              type="number"
-              name="lote_min"
-              defaultValue="50"
-              min="1"
-              max="100000"
-              required
-              onKeyDown={preventInvalidChars}
-              onInput={enforceMaxValue}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Lote Máximo</label>
-            <input
-              type="number"
-              name="lote_max"
-              defaultValue="200"
-              min="1"
-              max="100000"
-              required
-              onKeyDown={preventInvalidChars}
-              onInput={enforceMaxValue}
-            />
-          </div>
-
-        </div>
-
-        {/* INVENTARIO */}
-        <div className="section-divider"></div>
-
-        <div className="form-section-label">
-          Inventario
-        </div>
-
-        <div className="form-group">
-          <label>Cantidad de Mouses</label>
-          <input
-            type="number"
-            name="cant_mouses"
-            defaultValue="100"
-            min="1"
-            required
-            max="10000"
-            onKeyDown={preventInvalidChars}
-            onInput={enforceMaxValue}
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Cantidad de Teclados</label>
-          <input
-            type="number"
-            name="cant_teclados"
-            defaultValue="50"
-            min="1"
-            required
-            max="10000"
-            onKeyDown={preventInvalidChars}
-            onInput={enforceMaxValue}
-          />
-        </div>
-
-        {/* PERSONAL */}
-        <div className="section-divider"></div>
-
-        <div className="form-section-label">
-          Personal & Capacidad
-        </div>
-
+        {/* Llegada de lotes */}
+        <div className="section-divider" />
+        <div className="form-section-label">Llegada de Lotes</div>
         <div className="row">
           <div className="form-group">
-            <label>Min Empleados</label>
+            <label>Lote mínimo</label>
             <input
-              type="number"
-              name="min_empleados"
-              defaultValue="1"
-              min="1"
-              max="50"
-              required
-              onKeyDown={preventInvalidChars}
-              onInput={enforceMaxValue}
+              type="number" name="loteMin"
+              defaultValue="100" min="1" max="50000" required
+              onKeyDown={noNeg} onInput={clamp}
             />
           </div>
-
           <div className="form-group">
-            <label>Max Empleados</label>
+            <label>Lote máximo</label>
             <input
-              type="number"
-              name="max_empleados"
-              defaultValue="8"
-              min="1"
-              max="50"
-              required
-              onKeyDown={preventInvalidChars}
-              onInput={enforceMaxValue}
+              type="number" name="loteMax"
+              defaultValue="500" min="1" max="50000" required
+              onKeyDown={noNeg} onInput={clamp}
             />
           </div>
         </div>
+        <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '-0.4rem', marginBottom: '0.5rem' }}>
+          Cantidad entrante ~ Uniforme(min, max). Se clasifica 50% mouses / 50% teclados.
+        </p>
 
+        {/* Personal */}
+        <div className="section-divider" />
+        <div className="form-section-label">Personal</div>
         <div className="form-group">
-          <label>Capacidad Mesas (Máx)</label>
+          <label>Cantidad de Operarios</label>
           <input
-            type="number"
-            name="cantidad_mesas"
-            defaultValue="5"
-            min="1"
-            max="50"
-            required
-            onKeyDown={preventInvalidChars}
-            onInput={enforceMaxValue}
+            type="number" name="operarios"
+            defaultValue="5" min="1" max="200" required
+            onKeyDown={noNeg} onInput={clamp}
           />
         </div>
 
-        {/* COSTOS */}
-        <div className="section-divider"></div>
-
-        <div className="form-section-label">
-          Costos
-        </div>
-
-        <div className="row">
-
-          <div className="form-group">
-            <label>Costo Hora ($)</label>
-            <input
-              type="number"
-              name="costo_hora"
-              defaultValue="4500"
-              min="0"
-              step="100"
-              max="100000"
-              required
-              onKeyDown={preventInvalidChars}
-              onInput={enforceMaxValue}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Horas Jorn.</label>
-            <input
-              type="number"
-              name="horas_jornada"
-              value={8}
-              readOnly
-            />
-          </div>
-
-        </div>
-
+        {/* Costos */}
+        <div className="section-divider" />
+        <div className="form-section-label">Costos</div>
         <div className="form-group">
-          <label>Costo Fijo Diario ($)</label>
+          <label>Costo Hora Operario ($)</label>
           <input
-            type="number"
-            name="costo_fijo_diario"
-            defaultValue="20000"
-            min="0"
-            step="100"
-            max="1000000"
-            required
-            onKeyDown={preventInvalidChars}
-            onInput={enforceMaxValue}
+            type="number" name="costoHora"
+            defaultValue="4500" min="0" step="100" max="200000" required
+            onKeyDown={noNeg} onInput={clamp}
+          />
+        </div>
+        <div className="form-group">
+          <label>Costo Diario por Unidad Almacenada ($)</label>
+          <input
+            type="number" name="costoDiarioPorUnidad"
+            defaultValue="50" min="0" step="1" max="100000" required
+            onKeyDown={noNeg} onInput={clamp}
           />
         </div>
 
-        {/* SEMILLA */}
-        <div className="section-divider"></div>
-
-        <div className="form-section-label">
-          Reproducibilidad
-        </div>
-
-        <div className="form-group">
-          <label>Semilla aleatoria (opcional)</label>
-          <input
-            type="number"
-            name="semilla"
-            placeholder="Dejar vacío para aleatorio"
-            min="0"
-            onKeyDown={preventInvalidChars}
-          />
-        </div>
-
-        {/* BOTÓN */}
-        <div className="section-divider"></div>
-
-        <button
-          type="submit"
-          className="btn-primary"
-          disabled={isLoading}
-        >
-          {isLoading
-            ? (
-              <>
-                <span className="loader-inline" />
-                Simulando...
-              </>
-            )
-            : (
-              <>
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polygon points="5 3 19 12 5 21 5 3" />
-                </svg>
-
-                Ejecutar Simulación
-              </>
-            )
-          }
+        <div className="section-divider" />
+        <button type="submit" className="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
+          Ejecutar Simulación
         </button>
-
       </form>
     </section>
   );

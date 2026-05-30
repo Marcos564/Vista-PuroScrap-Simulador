@@ -36,3 +36,10 @@ export function normal(
 
   return media + z * desviacion;
 }
+
+// Distribución exponencial, útil para modelar tiempos entre eventos
+
+export function exponencial(beta) {
+  const u = Math.random();
+  return -beta * Math.log(u);
+}
