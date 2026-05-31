@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Formulario from './Formulario';
 import Resultados from './Resultados';
 
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = 'https://logica-puroscrap-simulador-production.up.railway.app';
 
 const Simulador = () => {
   const [apiStatus, setApiStatus] = useState('online');
