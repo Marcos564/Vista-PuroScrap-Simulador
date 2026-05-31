@@ -4,7 +4,7 @@ import Formulario from './componentes/Formulario';
 import Resultados from './componentes/Resultados';
 import Nav from './componentes/Nav';
 
-const API_URL = 'https://logica-puroscrap-simulador-production.up.railway.app/';
+const API_URL = 'https://logica-puroscrap-simulador-production.up.railway.app';
 
 function App() {
   const [apiStatus, setApiStatus] = useState('online');
