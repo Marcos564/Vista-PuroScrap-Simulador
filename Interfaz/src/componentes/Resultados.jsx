@@ -9,16 +9,17 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import "../styless/Resultados.css";
+import MenuExportar from './MenuExportar';
 
-// 1. REGISTRAR MÓDULOS DE CHART.JS
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
 export default function Resultados({ data }) {
-  // 2. ESTADOS PARA LOS MODALES
+  const [activeTab, setActiveTab] = useState('resumen'); 
+  
+
   const [detallesModal, setDetallesModal] = useState(null);
   const [mostrarGrafico, setMostrarGrafico] = useState(false);
 
-  // Helper para formato de moneda
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
@@ -27,19 +28,16 @@ export default function Resultados({ data }) {
     }).format(value);
   };
 
-  // 3. PREPARACIÓN DE DATOS PARA EL GRÁFICO
-  // ---> CAMBIO 1: Usar "Todos_Los_Escenarios"
   const escenarios = data.Todos_Los_Escenarios || [];
   const recomendacion = data.Recomendacion_Optima || {};
 
   const labels = escenarios.map(e => `${e.n_empleados} emp.`);
   const values = escenarios.map(e => e.rentabilidad);
   
-  // ---> CAMBIO 2: Nueva lógica para identificar el óptimo y las pérdidas
   const bgColors = escenarios.map(e => {
-    if (e.n_empleados === recomendacion.n_empleados) return 'rgba(22,163,74,0.85)'; // Óptimo (Verde fuerte)
-    if (e.rentabilidad < 0) return 'rgba(220,38,38,0.55)'; // Pérdida (Rojo)
-    return 'rgba(22,163,74,0.45)'; // Rentable (Verde claro)
+    if (e.n_empleados === recomendacion.n_empleados) return 'rgba(22,163,74,0.85)';
+    if (e.rentabilidad < 0) return 'rgba(220,38,38,0.55)';
+    return 'rgba(22,163,74,0.45)';
   });
 
   const borderColors = escenarios.map(e => {
@@ -71,9 +69,7 @@ export default function Resultados({ data }) {
         bodyColor: '#dcfce7',
         padding: 12,
         cornerRadius: 10,
-        callbacks: {
-          label: ctx => ' ' + formatCurrency(ctx.raw)
-        }
+        callbacks: { label: ctx => ' ' + formatCurrency(ctx.raw) }
       }
     },
     scales: {
@@ -110,131 +106,145 @@ export default function Resultados({ data }) {
     }
   };
 
-
   return (
     <section className="results-container active">
-      {/* --- KPIs PRINCIPALES --- */}
-      <div className="kpi-grid">
-        <div className="kpi-card highlight">
-          <div className="kpi-label">Mejor Escenario</div>
-          {/* Actualizado a la nueva ruta */}
-          <div className="kpi-value">{data.Recomendacion_Optima?.n_empleados || 'N/A'}</div>
-          <div className="kpi-label" style={{ marginTop: '5px' }}>Empleados</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Ingreso Bruto</div>
-          {/* Actualizado a la nueva ruta */}
-          <div className="kpi-value">{formatCurrency(data.Datos_Generales?.Ingreso_Bruto_USD || 0)}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Costo Total (Óptimo)</div>
-          <div className="kpi-value">{formatCurrency(data.Recomendacion_Optima?.costo_total || 0)}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Rentabilidad Neta</div>
-          <div className={`kpi-value ${data.Recomendacion_Optima?.rentabilidad >= 0 ? 'positive' : 'negative'}`}>
-            {formatCurrency(data.Recomendacion_Optima?.rentabilidad || 0)}
-          </div>
-        </div>
-      </div>
-
-      {/* --- MÉTRICAS OPERATIVAS --- */}
-      <div className="card" style={{ marginBottom: 0 }}>
-        <h2 style={{ fontSize: '0.9rem', marginBottom: '1.1rem', paddingBottom: '0.6rem' }}>
-          Métricas Operativas — Totales del Lote
-        </h2>
-        <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))' }}>
-          <div className="kpi-card">
-            <div className="kpi-label">Perif. Reciclados</div>
-            <div className="kpi-value">{data.Datos_Generales?.Perifericos_Reciclados || 0}</div>
-          </div>
-          <div className="kpi-card">
-            <div className="kpi-label">Perif. Reutilizados</div>
-            <div className="kpi-value">{data.Datos_Generales?.Perifericos_Reutilizados || 0}</div>
-          </div>
-          <div className="kpi-card">
-            {/* Cambiamos piezas desechadas por los gramos calculados */}
-            <div className="kpi-label">Residuo Peligroso</div>
-            <div className="kpi-value">{data.Datos_Generales?.Residuo_Peligroso_gr?.toFixed(2) || 0}</div>
-            <div className="kpi-label" style={{ marginTop: '5px' }}>Gramos</div>
-          </div>
-          <div className="kpi-card">
-            {/* Agregamos el material reutilizable */}
-            <div className="kpi-label">Mat. Reutilizable</div>
-            <div className="kpi-value">{data.Datos_Generales?.Material_Reutilizable_gr?.toFixed(2) || 0}</div>
-            <div className="kpi-label" style={{ marginTop: '5px' }}>Gramos</div>
-          </div>
-          <div className="kpi-card">
-            <div className="kpi-label">Tiempo Total</div>
-            <div className="kpi-value">{data.Datos_Generales?.Tiempo_Total_Horas || 0}</div>
-            <div className="kpi-label" style={{ marginTop: '5px' }}>Horas</div>
-          </div>
-        </div>
-      </div>
-
-      {/* --- TABLA DE ESCENARIOS --- */}
-      <div className="card">
-        <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      
+      {/* --- MENÚ DE PESTAÑAS --- */}
+      <div className="tabs-nav">
+        <button 
+          className={`tab-btn ${activeTab === 'resumen' ? 'active' : ''}`}
+          onClick={() => setActiveTab('resumen')}
+        >
+          Resumen Ejecutivo
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'escenarios' ? 'active' : ''}`}
+          onClick={() => setActiveTab('escenarios')}
+        >
           Análisis de Escenarios
-          <button className="btn-chart" onClick={() => setMostrarGrafico(true)}>
-             Ver Gráfico
-          </button>
-        </h2>
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                {/* Eliminamos columnas de Factible y Jornales */}
-                <th>Empleados</th>
-                <th>Días Necesarios</th>
-                <th>Costo Laboral</th>
-                <th>Costo Almacén</th>
-                <th>Costo Total</th>
-                <th>Rentabilidad</th>
-                <th>Detalles</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.Todos_Los_Escenarios?.map((esc) => {
-                // Nueva forma de verificar si es el óptimo
-                const esOptimo = esc.n_empleados === data.Recomendacion_Optima?.n_empleados;
-                
-                return (
-                  <tr key={esc.n_empleados}>
-                    <td style={{ fontWeight: 700 }}>
-                      {esc.n_empleados}
-                      <br />
-                      {esOptimo && <span className="badge-optimal">ÓPTIMO</span>}
-                    </td>
-                    {/* Actualizado a dias_requeridos (como lo manda FastAPI) */}
-                    <td>{esc.dias_requeridos}</td>
-                    <td>{formatCurrency(esc.costo_laboral)}</td>
-                    <td>{formatCurrency(esc.costo_almacenamiento)}</td>
-                    <td>{formatCurrency(esc.costo_total)}</td>
-                    <td className={esc.rentabilidad >= 0 ? 'positive' : 'negative'} style={{ fontWeight: 700 }}>
-                      {formatCurrency(esc.rentabilidad)}
-                    </td>
-                    <td>
-                      <button className="btn-sm" onClick={() => setDetallesModal(esc)}>
-                        Ver Cálculo
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        </button>
       </div>
 
-      {/* --- MODAL DE DETALLES --- */}
+      {/* --- PESTAÑA 1: RESUMEN (KPIs y Métricas) --- */}
+      {activeTab === 'resumen' && (
+        <div className="tab-content animate-fade-in">
+          <div className="kpi-grid">
+            <div className="kpi-card highlight">
+              <div className="kpi-label">Mejor Escenario</div>
+              <div className="kpi-value">{data.Recomendacion_Optima?.n_empleados || 'N/A'}</div>
+              <div className="kpi-label" style={{ marginTop: '5px' }}>Empleados</div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-label">Ingreso Bruto</div>
+              <div className="kpi-value">{formatCurrency(data.Datos_Generales?.Ingreso_Bruto_USD || 0)}</div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-label">Costo Total (Óptimo)</div>
+              <div className="kpi-value">{formatCurrency(data.Recomendacion_Optima?.costo_total || 0)}</div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-label">Rentabilidad Neta</div>
+              <div className={`kpi-value ${data.Recomendacion_Optima?.rentabilidad >= 0 ? 'positive' : 'negative'}`}>
+                {formatCurrency(data.Recomendacion_Optima?.rentabilidad || 0)}
+              </div>
+            </div>
+          </div>
+
+          <div className="card" style={{ marginBottom: 0, marginTop: '1.5rem' }}>
+            <h2 style={{ fontSize: '0.9rem', marginBottom: '1.1rem', paddingBottom: '0.6rem' }}>
+              Métricas Operativas — Totales del Lote
+            </h2>
+            <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))' }}>
+              <div className="kpi-card">
+                <div className="kpi-label">Perif. Reciclados</div>
+                <div className="kpi-value">{data.Datos_Generales?.Perifericos_Reciclados || 0}</div>
+              </div>
+              <div className="kpi-card">
+                <div className="kpi-label">Perif. Reutilizados</div>
+                <div className="kpi-value">{data.Datos_Generales?.Perifericos_Reutilizados || 0}</div>
+              </div>
+              <div className="kpi-card">
+                <div className="kpi-label">Residuo Peligroso</div>
+                <div className="kpi-value">{data.Datos_Generales?.Residuo_Peligroso_gr?.toFixed(2) || 0}</div>
+                <div className="kpi-label" style={{ marginTop: '5px' }}>Gramos</div>
+              </div>
+              <div className="kpi-card">
+                <div className="kpi-label">Mat. Reutilizable</div>
+                <div className="kpi-value">{data.Datos_Generales?.Material_Reutilizable_gr?.toFixed(2) || 0}</div>
+                <div className="kpi-label" style={{ marginTop: '5px' }}>Gramos</div>
+              </div>
+              <div className="kpi-card">
+                <div className="kpi-label">Tiempo Total</div>
+                <div className="kpi-value">{data.Datos_Generales?.Tiempo_Total_Horas || 0}</div>
+                <div className="kpi-label" style={{ marginTop: '5px' }}>Horas</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- PESTAÑA 2: ESCENARIOS (Tabla) --- */}
+      {activeTab === 'escenarios' && (
+        <div className="tab-content animate-fade-in">
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h2 style={{ margin: 0 }}>Comparativa de Empleados</h2>
+              <button className="btn-chart" onClick={() => setMostrarGrafico(true)}>
+                 Ver Gráfico
+              </button>
+              <MenuExportar resultados={data} />
+            </div>
+            
+            <div className="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Empleados</th>
+                    <th>Días</th>
+                    <th>Costo Lab.</th>
+                    <th>Costo Alm.</th>
+                    <th>Costo Total</th>
+                    <th>Rentabilidad</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.Todos_Los_Escenarios?.map((esc) => {
+                    const esOptimo = esc.n_empleados === data.Recomendacion_Optima?.n_empleados;
+                    return (
+                      <tr key={esc.n_empleados}>
+                        <td style={{ fontWeight: 700 }}>
+                          {esc.n_empleados} {esOptimo && <span className="badge-optimal" style={{marginLeft: '5px'}}>★</span>}
+                        </td>
+                        <td>{esc.dias_requeridos}</td>
+                        <td>{formatCurrency(esc.costo_laboral)}</td>
+                        <td>{formatCurrency(esc.costo_almacenamiento)}</td>
+                        <td>{formatCurrency(esc.costo_total)}</td>
+                        <td className={esc.rentabilidad >= 0 ? 'positive' : 'negative'} style={{ fontWeight: 700 }}>
+                          {formatCurrency(esc.rentabilidad)}
+                        </td>
+                        <td>
+                          <button className="btn-sm" onClick={() => setDetallesModal(esc)}>
+                            Detalle
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- MODALES (Se mantienen igual, fuera del condicional de pestañas) --- */}
       {detallesModal && (
         <div className="modal active" onClick={() => setDetallesModal(null)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <button className="close-btn" onClick={() => setDetallesModal(null)}>&times;</button>
             <h2 style={{ marginBottom: '1.25rem' }}>Cálculo — {detallesModal.n_empleados} Empleado(s)</h2>
             
-            {/* Reconstruimos las fórmulas usando las variables matemáticas directas porque quitamos los textos de la API */}
             <div className="formula-group">
               <span>Tiempo Total Lote</span>
               <code>{data.Datos_Generales?.Tiempo_Total_Horas} Horas Operativas</code>
@@ -263,7 +273,6 @@ export default function Resultados({ data }) {
         </div>
       )}
 
-      {/* --- MODAL DEL GRÁFICO --- */}
       {mostrarGrafico && (
         <div className="modal modal-chart active" onClick={() => setMostrarGrafico(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -280,7 +289,6 @@ export default function Resultados({ data }) {
             <div className="chart-legend">
               <div className="legend-item"><div className="legend-dot" style={{ background: '#16a34a' }}></div> Rentabilidad neta</div>
               <div className="legend-item"><div className="legend-dot" style={{ background: '#86efac', border: '2px solid #16a34a' }}></div> Escenario óptimo</div>
-              {/* Le quitamos el "No Factible" porque ya no existe esa regla */}
               <div className="legend-item"><div className="legend-dot" style={{ background: '#fca5a5', border: '2px dashed #dc2626' }}></div> Pérdida</div>
             </div>
           </div>
