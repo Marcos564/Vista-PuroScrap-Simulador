@@ -1,5 +1,25 @@
 import "../styless/Formulario.css";
+import { useState } from "react";
 export default function Formulario({ onSimular, isLoading }) {
+
+
+  const [minEmp, setMinEmp] = useState(1);
+  const [maxEmp, setMaxEmp] = useState(8);
+
+  const handleMinBlur = (e) => {
+    let val = parseInt(e.target.value, 10);
+    if (!val || val < 1) val = 1;
+    if (val > maxEmp) val = maxEmp; // Nunca mayor que el máximo
+    setMinEmp(val);
+  };
+
+  const handleMaxBlur = (e) => {
+    let val = parseInt(e.target.value, 10);
+    if (!val) val = maxEmp;
+    if (val < minEmp) val = minEmp; // Nunca menor que el mínimo
+    setMaxEmp(val);
+  };
+  
   
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -43,13 +63,16 @@ export default function Formulario({ onSimular, isLoading }) {
       <form onSubmit={handleSubmit}>
         
         <div className="form-section-label">Inventario</div>
+        <div className="row">
+
         <div className="form-group">
-          <label>Cantidad de Mouses</label>
-          <input type="number" name="cant_mouses" min="0" defaultValue="100" min="1" required max="10000" onKeyDown={preventInvalidChars} onInput={enforceMaxValue} />
+          <label>Minimo Lote</label>
+          <input type="number" name="min_lote" min="0" defaultValue="0" min="1" required max="10000" onKeyDown={preventInvalidChars} onInput={enforceMaxValue} />
         </div>
         <div className="form-group">
-          <label>Cantidad de Teclados</label>
-          <input type="number" name="cant_teclados" min="0" defaultValue="50" min="1" required max="10000" onKeyDown={preventInvalidChars} onInput={enforceMaxValue} />
+          <label>Maximo Lote</label>
+          <input type="number" name="max_lote" min="0" defaultValue="100" min="1" required max="10000" onKeyDown={preventInvalidChars} onInput={enforceMaxValue} />
+        </div>
         </div>
 
         <div className="section-divider"></div>
@@ -66,18 +89,13 @@ export default function Formulario({ onSimular, isLoading }) {
           </div>
         </div>
 
-        <div className="form-group">
-          <label>Capacidad Mesas (Máx)</label>
-          <input type="number" name="cantidad_mesas" min="0" defaultValue="5" min="1" max="1000"  onKeyDown={preventInvalidChars} onInput={enforceMaxValue} required />
-        </div>
-
         <div className="section-divider"></div>
         <div className="form-section-label">Costos</div>
 
         <div className="row">
           <div className="form-group">
             <label>Costo Hora ($)</label>
-            <input type="number" name="costo_hora" defaultValue="4500" min="0" step="100" max="100000"  onKeyDown={preventInvalidChars} onInput={enforceMaxValue} required/>
+            <input type="number" name="costo_hora" defaultValue="4500" min="1000" step="100" max="100000"  onKeyDown={preventInvalidChars} onInput={enforceMaxValue} required/>
           </div>
           <div className="form-group">
             <label>Horas Jorn.</label>
@@ -86,7 +104,7 @@ export default function Formulario({ onSimular, isLoading }) {
         </div>
 
         <div className="form-group">
-          <label>Costo Fijo Diario ($)</label>
+          <label>Costo por Unidad ($/día)</label>
           <input type="number" name="costo_fijo_diario" min="0" defaultValue="20000" step="100" max="1000000"  onKeyDown={preventInvalidChars} onInput={enforceMaxValue} required/>
         </div>
 
