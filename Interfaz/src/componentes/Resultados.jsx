@@ -15,11 +15,27 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
 export default function Resultados({ data }) {
   const [activeTab, setActiveTab] = useState('resumen'); 
-  
-
   const [detallesModal, setDetallesModal] = useState(null);
   const [mostrarGrafico, setMostrarGrafico] = useState(false);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const escenarios = data.Todos_Los_Escenarios || [];
+  const recomendacion = data.Recomendacion_Optima || {};
 
+  const escenariosPorPagina = 8;
+
+const totalPaginas = Math.ceil(
+  escenarios.length / escenariosPorPagina
+);
+
+const indiceInicio =
+  (paginaActual - 1) * escenariosPorPagina;
+
+const escenariosPaginados =
+  escenarios.slice(
+    indiceInicio,
+    indiceInicio + escenariosPorPagina
+  );
+  
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
@@ -28,8 +44,7 @@ export default function Resultados({ data }) {
     }).format(value);
   };
 
-  const escenarios = data.Todos_Los_Escenarios || [];
-  const recomendacion = data.Recomendacion_Optima || {};
+
 
   const labels = escenarios.map(e => `${e.n_empleados} emp.`);
   const values = escenarios.map(e => e.rentabilidad);
@@ -150,7 +165,75 @@ export default function Resultados({ data }) {
             </div>
           </div>
 
-          <div className="card" style={{ marginBottom: 0, marginTop: '1.5rem' }}>
+<div className="card" style={{ marginTop: '1.5rem' }}>
+  <h2
+    style={{
+      fontSize: '0.9rem',
+      marginBottom: '1.1rem',
+      paddingBottom: '0.6rem'
+    }}
+  >
+    Clasificación de Periféricos
+  </h2>
+
+  <div
+    className="kpi-grid"
+    style={{
+      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))'
+    }}
+  >
+      <div className="kpi-card">
+      <div className="kpi-label">Lote Total</div>
+      <div className="kpi-value">
+        {data.Datos_Generales?.Lote || 0}
+      </div>
+    </div>
+
+      <div className="kpi-card">
+      <div className="kpi-label">Cantidad de Teclados</div>
+      <div className="kpi-value">
+        {data.Datos_Generales?.Cant_Teclados || 0}
+      </div>
+    </div>
+
+      <div className="kpi-card">
+      <div className="kpi-label">Cantidad de Mouses</div>
+      <div className="kpi-value">
+        {data.Datos_Generales?.Cant_Mouses || 0}
+      </div>
+    </div>
+
+
+    <div className="kpi-card">
+      <div className="kpi-label">Mouses Reciclados</div>
+      <div className="kpi-value">
+        {data.Datos_Generales?.Cant_Mouses_Reciclados || 0}
+      </div>
+    </div>
+
+    <div className="kpi-card">
+      <div className="kpi-label">Mouses Reutilizados</div>
+      <div className="kpi-value">
+        {data.Datos_Generales?.Cant_Mouses_Reutilizados || 0}
+      </div>
+    </div>
+
+    <div className="kpi-card">
+      <div className="kpi-label">Teclados Reciclados</div>
+      <div className="kpi-value">
+        {data.Datos_Generales?.Cant_Teclados_Reciclados || 0}
+      </div>
+    </div>
+
+    <div className="kpi-card">
+      <div className="kpi-label">Teclados Reutilizados</div>
+      <div className="kpi-value">
+        {data.Datos_Generales?.Cant_Teclados_Reutilizados || 0}
+      </div>
+    </div>
+  </div>
+</div>
+          <div className="card" style={{ marginTop: '1.5rem' }}>
             <h2 style={{ fontSize: '0.9rem', marginBottom: '1.1rem', paddingBottom: '0.6rem' }}>
               Métricas Operativas — Totales del Lote
             </h2>
@@ -180,7 +263,8 @@ export default function Resultados({ data }) {
               </div>
             </div>
           </div>
-        </div>
+                </div>
+
       )}
 
       {/* --- PESTAÑA 2: ESCENARIOS (Tabla) --- */}
@@ -209,7 +293,7 @@ export default function Resultados({ data }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.Todos_Los_Escenarios?.map((esc) => {
+               {escenariosPaginados.map((esc) => {
                     const esOptimo = esc.n_empleados === data.Recomendacion_Optima?.n_empleados;
                     return (
                       <tr key={esc.n_empleados}>
@@ -234,6 +318,25 @@ export default function Resultados({ data }) {
                 </tbody>
               </table>
             </div>
+            <div className="pagination">
+  <button
+    disabled={paginaActual === 1}
+    onClick={() => setPaginaActual(paginaActual - 1)}
+  >
+    ← Anterior
+  </button>
+
+  <span>
+    Página {paginaActual} de {totalPaginas}
+  </span>
+
+  <button
+    disabled={paginaActual === totalPaginas}
+    onClick={() => setPaginaActual(paginaActual + 1)}
+  >
+    Siguiente →
+  </button>
+</div>
           </div>
         </div>
       )}
