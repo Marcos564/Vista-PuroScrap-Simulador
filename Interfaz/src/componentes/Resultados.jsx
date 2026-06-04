@@ -174,6 +174,9 @@ const escenariosPaginados =
     }}
   >
     Clasificación de Periféricos
+    <pre>
+    {JSON.stringify(data.Datos_Generales, null, 2)}
+    </pre>
   </h2>
 
   <div
