@@ -67,7 +67,7 @@ export default function Formulario({ onSimular, isLoading }) {
 
         <div className="form-group">
           <label>Minimo Lote</label>
-          <input type="number" name="min_lote" min="0" defaultValue="0" min="1" required max="10000" onKeyDown={preventInvalidChars} onInput={enforceMaxValue} />
+          <input type="number" name="min_lote" min="1" defaultValue="1" required max="10000" onKeyDown={preventInvalidChars} onInput={enforceMaxValue} />
         </div>
         <div className="form-group">
           <label>Maximo Lote</label>
